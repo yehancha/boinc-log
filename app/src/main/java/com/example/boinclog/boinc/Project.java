@@ -81,11 +81,13 @@ public class Project {
 //	public double  project_files_downloaded_time = 0;
 //
 //	/** when the last successful scheduler RPC finished */
-//	public double  last_rpc_time = 0;
+	public double  last_rpc_time = 0;
 //
 //	public boolean no_cpu_pref = false;
 //	public boolean no_cuda_pref = false;
 //	public boolean no_ati_pref = false;
+
+    public float sched_priority = 0;
 
     public final String getName() {
         return project_name.equals("") ? master_url : project_name;

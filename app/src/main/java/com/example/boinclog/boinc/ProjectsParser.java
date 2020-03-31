@@ -253,9 +253,9 @@ public class ProjectsParser extends BaseParser {
 //					else if (localName.equalsIgnoreCase("project_files_downloaded_time")) {
 //						mProject.project_files_downloaded_time = Double.parseDouble(mCurrentElement);
 //					}
-//					else if (localName.equalsIgnoreCase("last_rpc_time")) {
-//						mProject.last_rpc_time = Double.parseDouble(mCurrentElement);
-//					}
+					else if (localName.equalsIgnoreCase("last_rpc_time")) {
+						mProject.last_rpc_time = Double.parseDouble(mCurrentElement.toString());
+					}
 //					else if (localName.equalsIgnoreCase("no_cpu_pref")) {
 //						String trimmed = mCurrentElement.trim();
 //						mProject.no_cpu_pref = !trimmed.equals("0");
@@ -268,6 +268,9 @@ public class ProjectsParser extends BaseParser {
 //						String trimmed = mCurrentElement.trim();
 //						mProject.no_ati_pref = !trimmed.equals("0");
 //					}
+                    else if (localName.equalsIgnoreCase("sched_priority")) {
+                        mProject.sched_priority = Float.parseFloat(mCurrentElement.toString());
+                    }
                 }
             }
         }

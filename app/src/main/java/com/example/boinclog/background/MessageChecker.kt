@@ -9,9 +9,9 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.boinclog.MainActivity
 import com.example.boinclog.R
+import com.example.boinclog.utils.BoincClient
 import com.example.boinclog.utils.CHANNEL_ID_BOINC_NOTIFICATIONS
 import com.example.boinclog.utils.LocalData
-import com.example.boinclog.utils.RpcClientFactory
 
 const val NAME_MESSAGE_CHECKER = "NAME_MESSAGE_CHECKER"
 const val NOTIFICATION_ID = 1000
@@ -25,16 +25,14 @@ class MessageChecker(context: Context, workerParameters: WorkerParameters) :
         try {
             val lastSeqNo = LocalData(applicationContext).getLastSeqNo()
 
-            val rpcClient = RpcClientFactory.getClient()
-            val currentSeqNo = rpcClient.messageCount
+            val boincClient = BoincClient()
+            val currentSeqNo = boincClient.getMessageCount()
 
             if (lastSeqNo < currentSeqNo) {
                 showNotification(lastSeqNo, currentSeqNo)
             }
 
             logLastCheck()
-
-            rpcClient.close()
 
             return Result.success()
         } catch (e: Exception) {
