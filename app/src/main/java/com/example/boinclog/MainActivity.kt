@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 if (lastCheck > 0)
                     text += "Last Background Sync: " + DATE_FORMATER.format(Date(lastCheck)) + "\n\n"
 
-                status.projects.sortedBy { -it.sched_priority }.forEach {
+                status.projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }.forEach {
                     text += "" + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
                             INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
                             (if (it.dont_request_more_work) "N" else "Y") + " " +
