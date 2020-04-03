@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.HtmlCompat
 import com.example.boinclog.background.MessageCheckerStarter
 import com.example.boinclog.boinc.Message
 import com.example.boinclog.utils.BoincClient
+import com.example.boinclog.utils.BoincClientStatusFormatter
 import com.example.boinclog.utils.LocalData
 import com.example.boinclog.utils.NotificationChannelHandler
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,7 +26,7 @@ private val INTEGER_NUMBER_FORMATTER =
 class MainActivity : AppCompatActivity() {
     var loadExtra = 0
 
-    lateinit var localDate: LocalData
+    lateinit var localData: LocalData
     lateinit var messages: List<Message>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
             StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()
         )
         NotificationChannelHandler.createNotificationChannel(this)
-        localDate = LocalData(this)
+        localData = LocalData(this)
         showMessages()
         setListeners()
     }
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnMarkCheckpoint.setOnClickListener {
-            localDate.setLastSeqNo(messages[messages.size - 1].seqno)
+            localData.setLastSeqNo(messages[messages.size - 1].seqno)
             loadExtra = 0
             showMessages()
             startService(Intent(this, MessageCheckerStarter::class.java))
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         Thread(Runnable {
             try {
-                val lastSeq = localDate.getLastSeqNo()
+                val lastSeq = localData.getLastSeqNo()
                 var fromSeq = lastSeq - loadExtra
                 if (fromSeq < 0) fromSeq = 0
 
@@ -72,47 +74,20 @@ class MainActivity : AppCompatActivity() {
                 val status = boincClient.getClientStatus(fromSeq)
                 messages = status.messages
 
-                var text = "Last Read: $lastSeq\n"
-
-                val lastCheck = localDate.getLastCheck()
-                if (lastCheck > 0)
-                    text += "Last Background Sync: " + DATE_FORMATER.format(Date(lastCheck)) + "\n\n"
-
-                status.projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }.forEach {
-                    text += "" + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
-                            INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
-                            (if (it.dont_request_more_work) "N" else "Y") + " " +
-                            it.name + " " +
-                            DATE_FORMATER.format(Date(it.last_rpc_time.toLong() * 1000)) + "\n"
-                }
-
-                var lastTime = ""
-                var lastProject = ""
-                messages.forEach {
-                    val time = DATE_FORMATER.format(Date(it.timestamp * 1000))
-                    if (time != lastTime) {
-                        text += '\n' + time + '\n'
-                        lastTime = time
-                    }
-
-                    val project = it.project
-                    if (project != lastProject) {
-                        text += "\n" + project + '\n'
-                        lastProject = project
-                    }
-
-                    text += "" + it.seqno + ". " + it.body + '\n'
-                }
+                var text = BoincClientStatusFormatter.formatLastSync(lastSeq, localData)
+                text += BoincClientStatusFormatter.formatProjects(status.projects)
+                text += "<br/>"
+                text += BoincClientStatusFormatter.formatMessages(messages)
 
                 runOnUiThread {
-                    tv.text = text
+                    tv.text = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT)
                     setButtonEnabled(true)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
                     tv.text =
-                        "An error occurred. Please go back and come again.\n\nOriginal error:\n" + e.message
+                        HtmlCompat.fromHtml("An error occurred. Please go back and come again.<br/><br/>Original error:<br/>" + e.message, HtmlCompat.FROM_HTML_MODE_COMPACT)
                 }
             }
         }).start()
