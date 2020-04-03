@@ -18,6 +18,7 @@ class MessageCheckerStarter : IntentService("MessageCheckerStarter") {
             .build()
 
         val messageChecker = PeriodicWorkRequestBuilder<MessageChecker>(PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
+            .setInitialDelay(PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
             .setConstraints(constraints)
             .build()
 

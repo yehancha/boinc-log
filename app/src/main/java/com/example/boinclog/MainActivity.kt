@@ -1,8 +1,10 @@
 package com.example.boinclog
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatActivity
+import com.example.boinclog.background.MessageCheckerStarter
 import com.example.boinclog.boinc.Message
 import com.example.boinclog.utils.BoincClient
 import com.example.boinclog.utils.LocalData
@@ -47,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             localDate.setLastSeqNo(messages[messages.size - 1].seqno)
             loadExtra = 0
             showMessages()
+            startService(Intent(this, MessageCheckerStarter::class.java))
         }
     }
 
