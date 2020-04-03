@@ -31,20 +31,17 @@ class BoincClientStatusFormatter {
 
                 text += "" + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
                         INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
-                        (if (active) "A" else "!A") + " " +
-                        formatProjectName(it.name, active) + " " +
+                        (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
                         DATE_FORMATER.format(Date(it.last_rpc_time.toLong() * 1000)) + "<br/>"
             }
             return text
         }
 
-        private fun formatProjectName(name: String, active: Boolean) =
-            if (active) "<b>$name</b>" else name
 
         fun formatMessages(messages: List<Message>): String {
             var text = ""
             var lastTime = ""
-            var lastProject = ""
+            var lastProject = "---"
             messages.forEach {
                 val time = DATE_FORMATER.format(Date(it.timestamp * 1000))
 
@@ -55,7 +52,7 @@ class BoincClientStatusFormatter {
 
                 val project = it.project
                 if (project != lastProject) {
-                    text += if (project.isNotEmpty()) "<b><u>$project</u></b><br/>" else ""
+                    text += "<b><u>" + (if (project.isNotEmpty()) project else "Boinc Client") + "</u></b><br/>"
                     lastProject = project
                 }
 
