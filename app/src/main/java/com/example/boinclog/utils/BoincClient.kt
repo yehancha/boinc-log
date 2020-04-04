@@ -28,6 +28,7 @@ class BoincClient {
         status.messageCount = rpcClient.messageCount
         status.messages = rpcClient.getMessages(seqNo)
         status.projects = rpcClient.projectStatus
+        status.results = rpcClient.results
         disconnect()
 
         return status

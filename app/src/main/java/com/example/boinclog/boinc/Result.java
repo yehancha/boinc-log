@@ -33,7 +33,7 @@ public class Result {
     public double  final_cpu_time;
     public double  final_elapsed_time;
     public int     state;
-//	public int     scheduler_state;
+	public int     scheduler_state;
 //	public int     exit_status;
 //	public int     signal;
 //	public String  stderr_out;
