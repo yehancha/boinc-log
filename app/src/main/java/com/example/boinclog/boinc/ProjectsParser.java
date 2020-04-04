@@ -239,14 +239,12 @@ public class ProjectsParser extends BaseParser {
 //						String trimmed = mCurrentElement.trim();
 //						mProject.attached_via_acct_mgr = !trimmed.equals("0");
 //					}
-//					else if (localName.equalsIgnoreCase("detach_when_done")) {
-//						String trimmed = mCurrentElement.trim();
-//						mProject.detach_when_done = !trimmed.equals("0");
-//					}
-//					else if (localName.equalsIgnoreCase("ended")) {
-//						String trimmed = mCurrentElement.trim();
-//						mProject.ended = !trimmed.equals("0");
-//					}
+					else if (localName.equalsIgnoreCase("detach_when_done")) {
+						mProject.detach_when_done = !mCurrentElement.toString().equals("0");
+					}
+					else if (localName.equalsIgnoreCase("ended")) {
+						mProject.ended =!mCurrentElement.toString().equals("0");
+					}
                     else if (localName.equalsIgnoreCase("trickle_up_pending")) {
                         mProject.trickle_up_pending = !mCurrentElement.toString().equals("0");
                     }

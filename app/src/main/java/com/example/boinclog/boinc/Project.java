@@ -72,8 +72,8 @@ public class Project {
     public boolean dont_request_more_work = false;
     public boolean scheduler_rpc_in_progress = false;
 //	public boolean attached_via_acct_mgr = false;
-//	public boolean detach_when_done = false;
-//	public boolean ended = false;
+	public boolean detach_when_done = false;
+	public boolean ended = false;
     public boolean trickle_up_pending = false;
 
 //	/** When the last project file download was finished

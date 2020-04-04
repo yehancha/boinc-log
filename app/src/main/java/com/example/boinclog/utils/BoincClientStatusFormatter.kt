@@ -23,9 +23,7 @@ class BoincClientStatusFormatter {
 
             val lastCheck = localData.getLastCheck()
             if (lastCheck > 0)
-                text += "Last Background Sync: " + DATE_FORMATTER.format(Date(lastCheck)) + " (" + formatRelativeTime(
-                    lastCheck
-                ) + ")<br/><br/>"
+                text += "Last Background Sync: " + formatRelativeTime(lastCheck) + " ago<br/><br/>"
 
             return text
         }
@@ -38,18 +36,36 @@ class BoincClientStatusFormatter {
                     number++
                     val active = !it.dont_request_more_work
                     val last_rpc_time_millis = it.last_rpc_time.toLong() * 1000
+                    val projectStatus = formatProjectStatus(it)
 
                     text += "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
                             INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
                             (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
-                            DATE_FORMATTER.format(Date(last_rpc_time_millis)) + " (" + formatRelativeTime(
-                        last_rpc_time_millis
-                    ) + ")<br/>"
+                            "(" + formatRelativeTime(last_rpc_time_millis) + ")<br/>" +
+                            if (projectStatus.isNotEmpty()) "&nbsp;&nbsp;&nbsp;&nbsp;" + formatProjectStatus(it) + "<br/>" else ""
+
 
                     val taskText = formatResultsForProject(results, it)
                     if (taskText !== "") text += "$taskText<br/>"
                 }
             return text
+        }
+
+        private fun formatProjectStatus(project: Project): String {
+            var status = ""
+
+            if (project.ended)
+                status += "Ended. "
+            if (project.detach_when_done)
+                status += "Detach when done. "
+            if (project.dont_request_more_work)
+                status += "Don't request more work. "
+            if (project.scheduler_rpc_in_progress)
+                status += "Scheduler request in progress. "
+            else if (project.sched_rpc_pending != 0)
+                status += "Scheduler request pending. "
+
+            return status
         }
 
         private fun formatResultsForProject(results: Vector<Result>, project: Project): String {
@@ -63,14 +79,14 @@ class BoincClientStatusFormatter {
             var number = 0
             results.forEach {
                 number++
+                var resultState = formatResultState(it)
                 val resultText = "&nbsp;&nbsp;&nbsp;&nbsp;$number. " +
                         "v" + formatRelativeTime(it.received_time * 1000) + " " +
                         formatDuration(it.current_cpu_time.toLong()) + ":" + formatDuration(it.estimated_cpu_time_remaining.toLong()) + " " +
                         "^" + formatRelativeTime(it.report_deadline * 1000) + " " +
                         (it.fraction_done * 100).toInt() + "% " +
-                        formatResultState(it) + " "
-                text += if (it.active_task) "<b>$resultText</b>" else resultText
-                text += "<br/>"
+                        if (it.active_task) "<b>$resultState</b>" else resultState
+                text += "$resultText<br/>"
             }
             return text.removeSuffix("<br/>")
         }
