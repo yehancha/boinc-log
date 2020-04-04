@@ -23,7 +23,7 @@ class BoincClientStatusFormatter {
 
             val lastCheck = localData.getLastCheck()
             if (lastCheck > 0)
-                text += "Last Background Sync: " + DATE_FORMATTER.format(Date(lastCheck)) + "<br/><br/>"
+                text += "Last Background Sync: " + DATE_FORMATTER.format(Date(lastCheck)) + " (" + formatRelativeTime(lastCheck) + ")<br/><br/>"
 
             return text
         }
@@ -34,11 +34,12 @@ class BoincClientStatusFormatter {
             projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }.forEach {
                 number++
                 val active = !it.dont_request_more_work
+                val last_rpc_time_millis = it.last_rpc_time.toLong() * 1000
 
                 text += "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
                         INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
                         (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
-                        DATE_FORMATTER.format(Date(it.last_rpc_time.toLong() * 1000)) + "<br/>"
+                        DATE_FORMATTER.format(Date(last_rpc_time_millis)) +" (" + formatRelativeTime(last_rpc_time_millis) + ")<br/>"
 
                 val taskText = formatResultsForProject(results, it)
                 if (taskText !== "") text += "$taskText<br/>"
@@ -94,10 +95,11 @@ class BoincClientStatusFormatter {
             var lastTime = ""
             var lastProject = "---"
             messages.forEach {
-                val time = DATE_FORMATTER.format(Date(it.timestamp * 1000))
+                val timeMillis = it.timestamp * 1000;
+                val time = DATE_FORMATTER.format(Date(timeMillis))
 
                 if (time != lastTime) {
-                    text += "<b><i>$time</i></b><br/>"
+                    text += "<b><i>$time (" + formatRelativeTime(timeMillis) + ")</i></b><br/>"
                     lastTime = time
                 }
 
