@@ -115,6 +115,9 @@ public class ResultsParser extends BaseParser {
                         else if (localName.equalsIgnoreCase("active_task_state")) {
                             mResult.active_task_state = Integer.parseInt(mCurrentElement.toString());
                         }
+                        else if (localName.equalsIgnoreCase("scheduler_state")) {
+                            mResult.scheduler_state = Integer.parseInt(mCurrentElement.toString());
+                        }
                         else if (localName.equalsIgnoreCase("app_version_num")) {
                             mResult.app_version_num = Integer.parseInt(mCurrentElement.toString());
                         }
@@ -168,9 +171,6 @@ public class ResultsParser extends BaseParser {
                         }
                         else if (localName.equalsIgnoreCase("state")) {
                             mResult.state = Integer.parseInt(mCurrentElement.toString());
-                        }
-                        else if (localName.equalsIgnoreCase("scheduler_state")) {
-                            mResult.scheduler_state = Integer.parseInt(mCurrentElement.toString());
                         }
                         else if (localName.equalsIgnoreCase("report_deadline")) {
                             mResult.report_deadline = (long)Double.parseDouble(mCurrentElement.toString());

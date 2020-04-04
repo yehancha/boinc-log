@@ -23,7 +23,9 @@ class BoincClientStatusFormatter {
 
             val lastCheck = localData.getLastCheck()
             if (lastCheck > 0)
-                text += "Last Background Sync: " + DATE_FORMATTER.format(Date(lastCheck)) + " (" + formatRelativeTime(lastCheck) + ")<br/><br/>"
+                text += "Last Background Sync: " + DATE_FORMATTER.format(Date(lastCheck)) + " (" + formatRelativeTime(
+                    lastCheck
+                ) + ")<br/><br/>"
 
             return text
         }
@@ -31,19 +33,22 @@ class BoincClientStatusFormatter {
         fun formatProjects(projects: Vector<Project>, results: Vector<Result>): String {
             var text = ""
             var number = 0
-            projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }.forEach {
-                number++
-                val active = !it.dont_request_more_work
-                val last_rpc_time_millis = it.last_rpc_time.toLong() * 1000
+            projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }
+                .forEach {
+                    number++
+                    val active = !it.dont_request_more_work
+                    val last_rpc_time_millis = it.last_rpc_time.toLong() * 1000
 
-                text += "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
-                        INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
-                        (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
-                        DATE_FORMATTER.format(Date(last_rpc_time_millis)) +" (" + formatRelativeTime(last_rpc_time_millis) + ")<br/>"
+                    text += "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
+                            INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
+                            (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
+                            DATE_FORMATTER.format(Date(last_rpc_time_millis)) + " (" + formatRelativeTime(
+                        last_rpc_time_millis
+                    ) + ")<br/>"
 
-                val taskText = formatResultsForProject(results, it)
-                if (taskText !== "") text += "$taskText<br/>"
-            }
+                    val taskText = formatResultsForProject(results, it)
+                    if (taskText !== "") text += "$taskText<br/>"
+                }
             return text
         }
 
@@ -58,15 +63,14 @@ class BoincClientStatusFormatter {
             var number = 0
             results.forEach {
                 number++
-                text += "&nbsp;&nbsp;&nbsp;&nbsp;$number. " +
+                val resultText = "&nbsp;&nbsp;&nbsp;&nbsp;$number. " +
                         "v" + formatRelativeTime(it.received_time * 1000) + " " +
                         formatDuration(it.current_cpu_time.toLong()) + ":" + formatDuration(it.estimated_cpu_time_remaining.toLong()) + " " +
                         "^" + formatRelativeTime(it.report_deadline * 1000) + " " +
                         (it.fraction_done * 100).toInt() + "% " +
-                        BoincResultState.values()[it.state].label + " " +
-                        BoincSchedularState.values()[it.scheduler_state].label + " " +
-                        (if (it.active_task) "A " + BoincResultActiveState.values()[it.active_task_state].label else "NA") + " " +
-                        "<br/>"
+                        formatResultState(it) + " "
+                text += if (it.active_task) "<b>$resultText</b>" else resultText
+                text += "<br/>"
             }
             return text.removeSuffix("<br/>")
         }
@@ -88,6 +92,27 @@ class BoincClientStatusFormatter {
             val minutes = seconds / SECONDS_PER_MINUTE
             return if (minutes > 0) "" + minutes + "m"
             else "" + seconds + "s"
+        }
+
+        private fun formatResultState(result: Result): String {
+            return when (result.state) {
+                BoincResultState.RESULT_NEW.ordinal -> "Ready to download"
+                BoincResultState.RESULT_FILES_DOWNLOADING.ordinal -> "Downloading"
+                BoincResultState.RESULT_FILES_DOWNLOADED.ordinal -> when (result.active_task) {
+                    false -> "Ready to " + (if (result.fraction_done > 0) "resume" else "start")
+                    true -> when (result.scheduler_state) {
+                        BoincSchedularState.CPU_SCHED_SCHEDULED.ordinal -> "Running"
+                        BoincSchedularState.CPU_SCHED_PREEMPTED.ordinal -> "Waiting"
+                        else -> ""
+                    }
+                }
+                BoincResultState.RESULT_COMPUTE_ERROR.ordinal -> "Error"
+                BoincResultState.RESULT_FILES_UPLOADING.ordinal -> "Uploading"
+                BoincResultState.RESULT_FILES_UPLOADED.ordinal -> "Ready to report"
+                BoincResultState.RESULT_ABORTED.ordinal -> "Aborted"
+                BoincResultState.RESULT_UPLOAD_FAILED.ordinal -> "Upload failed"
+                else -> ""
+            }
         }
 
         fun formatMessages(messages: List<Message>): String {
