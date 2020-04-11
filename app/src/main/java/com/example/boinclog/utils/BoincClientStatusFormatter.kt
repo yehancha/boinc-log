@@ -31,19 +31,20 @@ class BoincClientStatusFormatter {
         fun formatProjects(projects: Vector<Project>, results: Vector<Result>): String {
             var text = ""
             var number = 0
-            projects.sortedBy { -(it.sched_priority + (if (it.dont_request_more_work) -10000 else 10000)) }
+            projects.sortedBy { -(it.sched_priority) }
                 .forEach {
                     number++
                     val active = !it.dont_request_more_work
                     val last_rpc_time_millis = it.last_rpc_time.toLong() * 1000
                     val projectStatus = formatProjectStatus(it)
 
-                    text += "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
+                    val title = "" + number + ". " + FRACTION_NUMBER_FORMATTER.format(it.sched_priority) + " " +
                             INTEGER_NUMBER_FORMATTER.format(it.resource_share) + " " +
-                            (if (active) "<b>" + it.name + "</b>" else it.name) + " " +
-                            "(" + formatRelativeTime(last_rpc_time_millis) + ")<br/>" +
-                            if (projectStatus.isNotEmpty()) "&nbsp;&nbsp;&nbsp;&nbsp;" + formatProjectStatus(it) + "<br/>" else ""
+                            it.name + " " +
+                            "(" + formatRelativeTime(last_rpc_time_millis) + ")"
 
+                    text += (if (active) "<b>$title</b>" else title) + "<br/>" +
+                            if (projectStatus.isNotEmpty()) "&nbsp;&nbsp;&nbsp;&nbsp;" + formatProjectStatus(it) + "<br/>" else ""
 
                     val taskText = formatResultsForProject(results, it)
                     if (taskText !== "") text += "$taskText<br/>"
@@ -85,8 +86,9 @@ class BoincClientStatusFormatter {
                         formatDuration(it.current_cpu_time.toLong()) + ":" + formatDuration(it.estimated_cpu_time_remaining.toLong()) + " " +
                         "^" + formatRelativeTime(it.report_deadline * 1000) + " " +
                         (it.fraction_done * 100).toInt() + "% " +
-                        if (it.active_task) "<b>$resultState</b>" else resultState
-                text += "$resultText<br/>"
+                        resultState
+
+                text += (if (it.active_task) "<b>$resultText</b>" else resultText) + "<br/>"
             }
             return text.removeSuffix("<br/>")
         }
