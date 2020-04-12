@@ -21,7 +21,6 @@ package com.example.boinclog.boinc;
 
 import java.util.Vector;
 
-
 public class CcState {
     public VersionInfo version_info;
     public HostInfo host_info;

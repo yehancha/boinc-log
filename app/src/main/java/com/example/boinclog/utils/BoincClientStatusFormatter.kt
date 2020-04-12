@@ -1,11 +1,10 @@
 package com.example.boinclog.utils
 
-import com.example.boinclog.boinc.Message
-import com.example.boinclog.boinc.Project
-import com.example.boinclog.boinc.Result
+import com.example.boinclog.boinc.*
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 private val DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH:mm")
 private val FRACTION_NUMBER_FORMATTER =
@@ -28,7 +27,11 @@ class BoincClientStatusFormatter {
             return text
         }
 
-        fun formatProjects(projects: Vector<Project>, results: Vector<Result>): String {
+        fun formatProjects(ccState: CcState): String {
+            val projects = ccState.projects
+            val results = ccState.results
+            val apps = getAppMap(ccState)
+
             var text = ""
             var number = 0
             projects.sortedBy { -(it.sched_priority) }
@@ -46,10 +49,20 @@ class BoincClientStatusFormatter {
                     text += (if (active) "<b>$title</b>" else title) + "<br/>" +
                             if (projectStatus.isNotEmpty()) "&nbsp;&nbsp;&nbsp;&nbsp;" + formatProjectStatus(it) + "<br/>" else ""
 
-                    val taskText = formatResultsForProject(results, it)
+                    val taskText = formatResultsForProject(results, apps, it)
                     if (taskText !== "") text += "$taskText<br/>"
                 }
             return text
+        }
+
+        private fun getAppMap(ccState: CcState): Map<String, App?> {
+            val appMap = HashMap<String, App?>()
+            val appsByName = HashMap<String, App>()
+
+            ccState.apps.forEach { appsByName[it.name] = it }
+            ccState.workunits.forEach { appMap[it.name] = appsByName[it.app_name] }
+
+            return appMap
         }
 
         private fun formatProjectStatus(project: Project): String {
@@ -69,13 +82,13 @@ class BoincClientStatusFormatter {
             return status
         }
 
-        private fun formatResultsForProject(results: Vector<Result>, project: Project): String {
+        private fun formatResultsForProject(results: Vector<Result>, apps: Map<String, App?>,  project: Project): String {
             val url = project.master_url
             val filteredResults = results.filter { it.project_url == url }
-            return if (filteredResults.isNotEmpty()) formatResults(filteredResults) else ""
+            return if (filteredResults.isNotEmpty()) formatResults(filteredResults, apps) else ""
         }
 
-        private fun formatResults(results: List<Result>): String {
+        private fun formatResults(results: List<Result>, apps: Map<String, App?>): String {
             var text = ""
             var number = 0
             results.forEach {
@@ -86,6 +99,7 @@ class BoincClientStatusFormatter {
                         formatDuration(it.current_cpu_time.toLong()) + ":" + formatDuration(it.estimated_cpu_time_remaining.toLong()) + " " +
                         "^" + formatRelativeTime(it.report_deadline * 1000) + " " +
                         (it.fraction_done * 100).toInt() + "% " +
+                        apps[it.wu_name]?.name + " " +
                         resultState
 
                 text += (if (it.active_task) "<b>$resultText</b>" else resultText) + "<br/>"

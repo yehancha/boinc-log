@@ -25,10 +25,10 @@ class BoincClient {
         val status = BoincClientStatus()
 
         connect()
+
         status.messageCount = rpcClient.messageCount
         status.messages = rpcClient.getMessages(seqNo)
-        status.projects = rpcClient.projectStatus
-        status.results = rpcClient.results
+        status.ccState = rpcClient.state
         disconnect()
 
         return status

@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 messages = status.messages
 
                 var text = BoincClientStatusFormatter.formatLastSync(lastSeq, localData)
-                text += BoincClientStatusFormatter.formatProjects(status.projects, status.results)
+                text += BoincClientStatusFormatter.formatProjects(status.ccState)
                 text += "<br/>"
                 text += BoincClientStatusFormatter.formatMessages(messages)
 
