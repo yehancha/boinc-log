@@ -12,16 +12,8 @@ import com.example.boinclog.utils.BoincClientStatusFormatter
 import com.example.boinclog.utils.LocalData
 import com.example.boinclog.utils.NotificationChannelHandler
 import kotlinx.android.synthetic.main.activity_main.*
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
 private const val EXTRA_PAGE_SIZE = 10
-private val DATE_FORMATER = SimpleDateFormat("yyyy-MM-dd HH:mm")
-private val FRACTION_NUMBER_FORMATTER =
-    NumberFormat.getInstance().apply { minimumFractionDigits = 2; maximumFractionDigits = 2 }
-private val INTEGER_NUMBER_FORMATTER =
-    NumberFormat.getInstance().apply { maximumFractionDigits = 0 }
 
 class MainActivity : AppCompatActivity() {
     var loadExtra = 0
@@ -46,18 +38,17 @@ class MainActivity : AppCompatActivity() {
             loadExtra += EXTRA_PAGE_SIZE
             showMessages()
         }
+    }
 
-        btnMarkCheckpoint.setOnClickListener {
-            localData.setLastSeqNo(messages[messages.size - 1].seqno)
-            loadExtra = 0
-            showMessages()
-            startService(Intent(this, MessageCheckerStarter::class.java))
-        }
+    private fun markRead() {
+        if (loadExtra != 0) return;
+        if (messages.isEmpty()) return;
+        localData.setLastSeqNo(messages[messages.size - 1].seqno)
+        startService(Intent(this, MessageCheckerStarter::class.java))
     }
 
     private fun setButtonEnabled(enable: Boolean) {
         btnLoadMore.isEnabled = enable
-        btnMarkCheckpoint.isEnabled = enable
     }
 
     private fun showMessages() {
@@ -83,6 +74,8 @@ class MainActivity : AppCompatActivity() {
                     tv.text = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT)
                     setButtonEnabled(true)
                 }
+
+                markRead()
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
