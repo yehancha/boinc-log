@@ -17,8 +17,8 @@ class MessageCheckerStarter : IntentService("MessageCheckerStarter") {
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val messageChecker = PeriodicWorkRequestBuilder<MessageChecker>(PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
-            .setInitialDelay(PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS, TimeUnit.MILLISECONDS)
+        val messageChecker = PeriodicWorkRequestBuilder<MessageChecker>(1, TimeUnit.HOURS)
+            .setInitialDelay(1, TimeUnit.HOURS)
             .setConstraints(constraints)
             .build()
 
